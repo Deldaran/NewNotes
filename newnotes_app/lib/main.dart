@@ -52,11 +52,11 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       builder: (context) {
         return PostItDialog(
-          onSave: (title, description) {},
-          initialTitle: postIt.title,
-          initialDescription: postIt.description,
-          postItId: postIt.id,
-        );
+            onSave: (title, description) {},
+            initialTitle: postIt.title,
+            initialDescription: postIt.description,
+            postItId: postIt.id,
+            postItColor: postIt.color);
       },
     );
   }
@@ -135,10 +135,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           ...postItData.map((postIt) {
             double posTop = postIt.y.toDouble();
-            double posLeft = startColumnWidth + postIt.x.toDouble();
+            double posLeft = postIt.x.toDouble();
             String title = postIt.title;
             String description = postIt.description;
             int id = postIt.id;
+            int colorValue = postIt.color;
 
             return Positioned(
               top: posTop,
@@ -153,6 +154,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     selectedPostIt = postIt;
                   });
                 },
+                colorValue: colorValue,
+                id: id,
               ),
             );
           }).toList(),
@@ -189,23 +192,24 @@ class PostItData {
   final int x;
   final int y;
   final int id;
+  final int color;
 
-  PostItData({
-    required this.title,
-    required this.description,
-    required this.x,
-    required this.y,
-    required this.id,
-  });
+  PostItData(
+      {required this.title,
+      required this.description,
+      required this.x,
+      required this.y,
+      required this.id,
+      required this.color});
 
   factory PostItData.fromJson(Map<String, dynamic> json) {
     return PostItData(
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      x: json['x'] ?? 0,
-      y: json['y'] ?? 0,
-      id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
-    );
+        title: json['title'] ?? '',
+        description: json['description'] ?? '',
+        x: json['x'] ?? 0,
+        y: json['y'] ?? 0,
+        id: json['id'] != null ? int.parse(json['id'].toString()) : 0,
+        color: json['color']);
   }
 }
 
@@ -230,6 +234,10 @@ class ColorManager {
     ];
     _selectedColor = primaryColors[random.nextInt(primaryColors.length)];
   }
+
+  void setColor(Color color) {
+    _selectedColor = color;
+  }
 }
 
 class PostIt extends StatefulWidget {
@@ -238,31 +246,36 @@ class PostIt extends StatefulWidget {
   final String title;
   final String description;
   final VoidCallback onSelect;
+  final int colorValue;
+  final int id;
 
-  const PostIt({
-    Key? key,
-    required this.x,
-    required this.y,
-    required this.title,
-    required this.description,
-    required this.onSelect,
-  }) : super(key: key);
+  const PostIt(
+      {Key? key,
+      required this.x,
+      required this.y,
+      required this.title,
+      required this.description,
+      required this.onSelect,
+      required this.colorValue,
+      required this.id})
+      : super(key: key);
 
   @override
   _PostItState createState() => _PostItState();
 }
 
 class _PostItState extends State<PostIt> {
-  final ColorManager colorManager = ColorManager();
   late double top;
   late double left;
-
+  late Color color;
+  late int id;
   @override
   void initState() {
     super.initState();
-    colorManager.chooseRandomColor();
+    color = Color(widget.colorValue);
     top = widget.x;
     left = widget.y;
+    id = widget.id;
   }
 
   @override
@@ -291,11 +304,47 @@ class _PostItState extends State<PostIt> {
               top = details.offset.dy;
               left = details.offset.dx;
             });
+
+            _sendUpdateRequest();
           },
           child: buildCardContent(),
         ),
       ),
     );
+  }
+
+  Future<void> updateData() async {
+    try {
+      List<PostItData> data = await DataFetcher.fetchData();
+      Provider.of<PostItDataProvider>(context, listen: false)
+          .setPostItData(data);
+    } catch (e) {
+      print('Error fetching data: $e');
+      // Handle error
+    }
+  }
+
+  void _sendUpdateRequest() async {
+    try {
+      final double normalizedX = left / MediaQuery.of(context).size.width;
+      final double normalizedY = top / MediaQuery.of(context).size.height;
+
+      final Map<String, dynamic> requestBody = {
+        'x': ((normalizedX) * MediaQuery.of(context).size.width).toInt(),
+        'y': ((normalizedY) * MediaQuery.of(context).size.height).toInt(),
+      };
+
+      await http.put(
+        Uri.parse('http://localhost:3001/elements/${widget.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+
+      print('Requête UPDATE réussie');
+      updateData();
+    } catch (error) {
+      print('Erreur lors de la requête UPDATE : $error');
+    }
   }
 
   Widget buildCardContent() {
@@ -305,7 +354,7 @@ class _PostItState extends State<PostIt> {
         width: 300,
         height: 300,
         child: Card(
-          color: colorManager.selectedColor,
+          color: color,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(0),
           ),
@@ -355,14 +404,16 @@ class PostItDialog extends StatefulWidget {
   final String? initialTitle;
   final String? initialDescription;
   final int postItId;
+  final int postItColor;
 
-  const PostItDialog({
-    Key? key,
-    required this.onSave,
-    this.initialTitle,
-    this.initialDescription,
-    required this.postItId,
-  }) : super(key: key);
+  const PostItDialog(
+      {Key? key,
+      required this.onSave,
+      this.initialTitle,
+      this.initialDescription,
+      required this.postItId,
+      required this.postItColor})
+      : super(key: key);
 
   @override
   _PostItDialogState createState() => _PostItDialogState();
@@ -380,15 +431,13 @@ class _PostItDialogState extends State<PostItDialog> {
     titleController = TextEditingController(text: widget.initialTitle);
     descriptionController =
         TextEditingController(text: widget.initialDescription);
-    colorManager.chooseRandomColor();
-    // Ensure that postItData is initialized
     postItData = PostItData(
-      title: widget.initialTitle ?? '',
-      description: widget.initialDescription ?? '',
-      x: 0,
-      y: 0,
-      id: widget.postItId,
-    );
+        title: widget.initialTitle ?? '',
+        description: widget.initialDescription ?? '',
+        x: 0,
+        y: 0,
+        id: widget.postItId,
+        color: widget.postItColor);
   }
 
   Future<void> putData() async {
@@ -435,7 +484,7 @@ class _PostItDialogState extends State<PostItDialog> {
         width: double.infinity,
         padding: EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: colorManager.selectedColor?.withOpacity(0.95),
+          color: Color(postItData.color).withOpacity(0.95),
           borderRadius: BorderRadius.circular(10.0),
         ),
         child: Column(
@@ -522,12 +571,13 @@ class _PostItInputDialogState extends State<PostItInputDialog> {
     try {
       final String title = titleController.text;
       final String description = descriptionController.text;
-
+      final Color? color = colorManager.selectedColor;
       final Map<String, dynamic> requestBody = {
         'title': title,
         'description': description,
         'x': x,
         'y': y,
+        'color': color?.value,
       };
 
       await http
@@ -670,7 +720,7 @@ class BigCard extends StatelessWidget {
                     padding: EdgeInsets.all(20),
                   ),
                   child: Text(
-                    'Créer un Post-It',
+                    'Créer un Post-it',
                     style: TextStyle(
                       fontSize: 20,
                       color: Colors.white,
@@ -695,7 +745,7 @@ class BigCard extends StatelessWidget {
                     padding: EdgeInsets.all(20),
                   ),
                   child: Text(
-                    'Modifie ton post-It',
+                    'Modifie ton Post-It',
                     style: TextStyle(
                       fontSize: 20,
                       color: Colors.white,
