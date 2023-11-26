@@ -74,10 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _deletePostIt() {
     if (selectedPostIt != null) {
-      // Envoyer une requête de suppression à l'API
       _sendDeleteRequest(selectedPostIt!.id);
     } else {
-      // Gérer le cas où aucun Post-It n'est sélectionné
       print("Aucun Post-It sélectionné pour la suppression");
     }
   }
@@ -105,7 +103,6 @@ class _MyHomePageState extends State<MyHomePage> {
           .setPostItData(data);
     } catch (e) {
       print('Error fetching data: $e');
-      // Gérer l'erreur comme nécessaire
     }
   }
 
@@ -127,7 +124,6 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               BigCard(
                 selectedPostIt: selectedPostIt,
-                // Pass the callback function to BigCard
                 onModifyPressed: () => _modifyPostIt(selectedPostIt!),
                 onDeletePressed: _deletePostIt,
               ),
@@ -278,6 +274,27 @@ class _PostItState extends State<PostIt> {
     id = widget.id;
   }
 
+  void _handleDoubleTap() {
+    _showPostItDialog();
+  }
+
+  void _showPostItDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return PostItDialog(
+          onSave: (title, description) {
+            _sendUpdateRequest();
+          },
+          initialTitle: widget.title,
+          initialDescription: widget.description,
+          postItId: widget.id,
+          postItColor: widget.colorValue,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Positioned(
@@ -285,6 +302,7 @@ class _PostItState extends State<PostIt> {
       left: left,
       child: GestureDetector(
         onTap: widget.onSelect,
+        onDoubleTap: _handleDoubleTap,
         child: Draggable(
           feedback: SizedBox(
             width: 300,
@@ -382,12 +400,15 @@ class _PostItState extends State<PostIt> {
                 indent: 20,
                 endIndent: 20,
               ),
-              Padding(
+              Container(
+                height: 145,
                 padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  widget.description,
-                  style: TextStyle(
-                    fontSize: 16,
+                child: SingleChildScrollView(
+                  child: Text(
+                    widget.description,
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
                 ),
               ),
@@ -481,8 +502,9 @@ class _PostItDialogState extends State<PostItDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(16.0),
+        width: MediaQuery.of(context).size.width / 1.2,
+        height: MediaQuery.of(context).size.height / 1.2,
+        padding: EdgeInsets.all(100.0),
         decoration: BoxDecoration(
           color: Color(postItData.color).withOpacity(0.95),
           borderRadius: BorderRadius.circular(10.0),
@@ -535,13 +557,13 @@ class _PostItDialogState extends State<PostItDialog> {
 
 class PostItInputDialog extends StatefulWidget {
   final Function(String title, String description) onSave;
-  final String? initialTitle; // Add this line
-  final String? initialDescription; // Add this line
+  final String? initialTitle;
+  final String? initialDescription;
   const PostItInputDialog({
     Key? key,
     required this.onSave,
-    this.initialTitle, // Add this line
-    this.initialDescription, // Add this line
+    this.initialTitle,
+    this.initialDescription,
   }) : super(key: key);
 
   @override
@@ -631,7 +653,7 @@ class _PostItInputDialogState extends State<PostItInputDialog> {
             Text('Contenue:'),
             TextField(
               controller: descriptionController,
-              maxLines: null, // Set to null for an unlimited number of lines
+              maxLines: null,
               keyboardType: TextInputType.multiline,
             ),
             SizedBox(height: 20),
@@ -707,16 +729,13 @@ class BigCard extends StatelessWidget {
                       context: context,
                       builder: (context) {
                         return PostItInputDialog(
-                          onSave: (title, description) {
-                            // Handle saving the new Post-It data
-                            // You may want to update the backend API and UI accordingly
-                          },
+                          onSave: (title, description) {},
                         );
                       },
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 215, 93, 255),
+                    backgroundColor: Color.fromARGB(255, 246, 9, 167),
                     padding: EdgeInsets.all(20),
                   ),
                   child: Text(
@@ -736,12 +755,10 @@ class BigCard extends StatelessWidget {
                     if (selectedPostIt != null) {
                       onModifyPressed?.call();
                       ;
-                    } else {
-                      // Handle the case when no Post-It is selected
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 147, 98, 240),
+                    backgroundColor: Color.fromARGB(255, 236, 19, 184),
                     padding: EdgeInsets.all(20),
                   ),
                   child: Text(
@@ -761,7 +778,7 @@ class BigCard extends StatelessWidget {
                     onDeletePressed?.call();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 245, 112, 103),
+                    backgroundColor: Color.fromARGB(255, 227, 28, 202),
                     padding: EdgeInsets.all(20),
                   ),
                   child: Text(

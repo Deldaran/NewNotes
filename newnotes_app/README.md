@@ -1,16 +1,16 @@
-# newnotes_app
+#NewNotes App
+##Serveur
+Pour lancer le serveur, suivez ces étapes dans le terminal depuis le dossier Backend :
 
-A new Flutter project.
+1. Exécutez npm i pour installer les modules Node nécessaires.
+2. Lancez la commande node index.js pour démarrer le serveur sur le port 3001.
+Assurez-vous que toutes les dépendances sont installées correctement avant de lancer le serveur. En cas de problème, vérifiez les messages d'erreur dans le terminal et installez les modules manquants le cas échéant.
 
-## Getting Started
+Frontend
+Pour exécuter le frontend, suivez ces étapes :
 
-This project is a starting point for a Flutter application.
+1. Ouvrez le projet dans un environnement de développement intégré (IDE) tel que Visual Studio Code.
+2. Exécutez le projet à partir de l'IDE.
+Vérifiez que toutes les dépendances du frontend sont correctement installées. Si vous rencontrez des problèmes, examinez les messages d'erreur dans la console de développement de votre navigateur.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+N'oubliez pas d'ajuster les configurations du serveur et du frontend selon vos besoins, notamment les ports et les chemins d'accès.
