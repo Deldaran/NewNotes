@@ -382,14 +382,16 @@ class _PostItState extends State<PostIt> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                margin: EdgeInsets.only(bottom: 20),
+                height: 90,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 50),
-                  child: Text(
-                    widget.title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  padding: const EdgeInsets.all(20),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      widget.title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -518,7 +520,12 @@ class _PostItDialogState extends State<PostItDialog> {
             ),
             SizedBox(height: 20),
             Text('Titre:'),
-            TextField(controller: titleController),
+            TextField(
+              controller: titleController,
+              maxLength: 120,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+            ),
             SizedBox(height: 20),
             Text('Contenu:'),
             TextField(
@@ -648,7 +655,11 @@ class _PostItInputDialogState extends State<PostItInputDialog> {
             ),
             SizedBox(height: 20),
             Text('Titre:'),
-            TextField(controller: titleController),
+            TextField(
+              controller: titleController,
+              maxLength: 120,
+              keyboardType: TextInputType.multiline,
+            ),
             SizedBox(height: 20),
             Text('Contenue:'),
             TextField(
