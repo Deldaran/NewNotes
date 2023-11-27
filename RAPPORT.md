@@ -1,4 +1,4 @@
-#NewNotes App
+# NewNotes App
 
 # Organisateur de Mémos
 
@@ -18,9 +18,9 @@ Cette application web a été conçue pour aider les utilisateurs à créer et o
 
 
 
-#Comment lancer le projet
+# Comment lancer le projet
 
-##Backend
+## Backend
 Pour lancer le serveur, suivez ces étapes dans le terminal depuis le dossier Backend :
 
 1. Exécutez npm i pour installer les modules Node nécessaires.
