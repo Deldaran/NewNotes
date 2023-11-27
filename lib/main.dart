@@ -117,53 +117,64 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 186, 186, 186),
-      body: Stack(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
             children: [
-              BigCard(
-                selectedPostIt: selectedPostIt,
-                onModifyPressed: () => _modifyPostIt(selectedPostIt!),
-                onDeletePressed: _deletePostIt,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  BigCard(
+                    selectedPostIt: selectedPostIt,
+                    onModifyPressed: () => _modifyPostIt(selectedPostIt!),
+                    onDeletePressed: _deletePostIt,
+                  ),
+                ],
+              ),
+              ...postItData.map((postIt) {
+                double posTop = postIt.y.toDouble();
+                double posLeft = postIt.x.toDouble();
+                String title = postIt.title;
+                String description = postIt.description;
+                int id = postIt.id;
+                int colorValue = postIt.color;
+
+                double newPosTop = posTop *
+                    constraints.maxHeight /
+                    MediaQuery.of(context).size.height;
+                double newPosLeft = posLeft *
+                    constraints.maxWidth /
+                    MediaQuery.of(context).size.width;
+
+                return Positioned(
+                  top: newPosTop,
+                  left: newPosLeft,
+                  child: PostIt(
+                    x: newPosTop,
+                    y: newPosLeft,
+                    title: title,
+                    description: description,
+                    onSelect: () {
+                      setState(() {
+                        selectedPostIt = postIt;
+                      });
+                    },
+                    colorValue: colorValue,
+                    id: id,
+                  ),
+                );
+              }).toList(),
+              Positioned(
+                top: 0,
+                right: 500,
+                child: Text(
+                  'Number of Post-Its: ${postItData.length}',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
               ),
             ],
-          ),
-          ...postItData.map((postIt) {
-            double posTop = postIt.y.toDouble();
-            double posLeft = postIt.x.toDouble();
-            String title = postIt.title;
-            String description = postIt.description;
-            int id = postIt.id;
-            int colorValue = postIt.color;
-
-            return Positioned(
-              top: posTop,
-              left: posLeft,
-              child: PostIt(
-                x: posTop,
-                y: posLeft,
-                title: title,
-                description: description,
-                onSelect: () {
-                  setState(() {
-                    selectedPostIt = postIt;
-                  });
-                },
-                colorValue: colorValue,
-                id: id,
-              ),
-            );
-          }).toList(),
-          Positioned(
-            top: 0,
-            right: 500,
-            child: Text(
-              'Number of Post-Its: ${postItData.length}',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
